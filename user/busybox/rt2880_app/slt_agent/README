@@ -1,0 +1,32 @@
+Please follow below steps to build SLT firmware
+1.  Modify "source/linux-2.6.36.x/arch/mips/ralink/Makefile"
+    "obj-m += slt/"
+
+2.  Modify to "source/user/Makefile"
+    "ra_dir_y += slt_agent" 
+
+3.  Modify "source/linux-2.6.36.x/arch/mips/ralink/cmdline.c" to change console buadrate
+    RT6856: "rt2880_cmdline[]="console=ttyS1,57600n8 root=/dev/ram0"
+    MT7620: "rt2880_cmdline[]="console=ttyS1,115200n8 root=/dev/ram0"
+
+4.  Modify "source/vendors/Ralink/PLATFORM/rcS" (PLATFORM = MT7620, RT6856, or ...)
+    #nvram_daemon&
+    #goahead&
+    slt dut PLATFORM
+    slt link_partner PLATFORM
+
+5.  Enable Kernel configuration for the testing peripherals
+    PCIe, MMC, GDMA, SCSI Disk, USB, USB MSD, VFAT Filesystem, Codepage 437, Charset ISO8859-1, SYSFS, WiFi Sta, module support
+
+6.  Disable Kernel configuration (use SLT functions instead)
+    GPIO, PCM, I2S
+
+7.  Disable all user-space applications to reduce firmware size (except scripts, switch, iwpriv)
+
+8.  Enable Port5 for RGMII test (MAC_To_PHY)
+
+9.  Enable Busybox configration
+    insmod, rmmod, mdev, umount, stty
+
+10. Modify WiFi Profile(RT2860AP.dat) configuration of Link Partner for WiFi test (Link Partner)
+    Channel, HT_EXTCHA, SSID, WirelessMode, HT_XX

@@ -1,0 +1,614 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <wait.h>
+#include <string.h>
+#include <pthread.h>
+
+#include "hert_com.h"
+#include "hert_app.h"
+#include "hert_msg.h"
+#include "hert_util.h"
+#include "hert_tcp.h"
+#include "hert_api.h"
+
+#define BAIDU_DOMAIN_NAME "www.baidu.com"
+#define NETEASY_DOMAIN_NAME "www.163.com"
+#define SOHU_DOMAIN_NAME "www.sohu.com"
+
+static HERT_SESSION  g_sessionMonitor;
+
+static int g_nRunCount = 0;
+static int g_nUseSelect = 0;
+
+extern int heroute_ping_apiLan(char *pszHostName, char *pszSrcIP, int nPingCount, int nTimeOut);
+
+int  hert_SelectTimer(int nSecond);
+
+static int ping_wan_host(char *domainName)
+{
+    char wanif_addr[16] = {0};
+
+    sprintf(wanif_addr, "%s", hertUtil_getWanIP());
+    if (wanif_addr[0] == 0x0) 
+    {
+        if ( hertUtil_IsInFile("/var/hertpingapi","DEBUG") )
+        {
+            printf("hertUtil_getWanIP socket(%s)\n", hertUtil_getWanInterface());
+        }
+        return -1;
+    }
+
+    if (!heroute_ping_apiWan(domainName, wanif_addr, 3, 3))
+    {
+        return 1;
+    }
+    return -1;
+}
+
+static int check_tcp_IsReachInternet_Init()
+{
+    int ret = 0;
+
+    HERT_TCP_check_Connect_UnInit(&g_sessionMonitor);
+	
+    memset(&g_sessionMonitor, 0x0, sizeof(g_sessionMonitor));
+    //strcpy(g_sessionMonitor.authserver,"10.189.24.66");
+    strcpy(g_sessionMonitor.authserver,hertUtil_getPingSeverAddr());
+
+    strcpy(g_sessionMonitor.authdomain,DEFAULT_AUTHDOMAIN);
+    //g_sessionMonitor.authport = DEFAULT_AUTHPORT;
+    g_sessionMonitor.authport = hertUtil_getPingSeverPort();
+    strcpy(g_sessionMonitor.localaddress,hertUtil_getWanIP());
+    g_sessionMonitor.localport = 0;
+
+    /* init parameters */
+    ret = HERT_TCP_check_Connect_Init(&g_sessionMonitor);
+    if ( RETCODE_SUCCESS != ret)
+    {
+        HERT_LOGDEBUG("Failed to HERT_TCP_check_Connect_Init app!");
+        return 0;
+    }
+    return 1;
+}
+
+static int check_tcp_IsReachInternet()
+{
+    int ret = 0;
+
+    /* it will wait for 1.wan is up, 2.server is up */
+if (!hertUtil_IsInFile("/var/hertconnect","DEBUG")){
+    ret = HERT_TCP_check_ConnectTimeOut(&g_sessionMonitor);
+}
+else
+{
+    ret = HERT_TCP_check_Connect(&g_sessionMonitor);
+}
+    if ( RETCODE_NOIMPORTMENT_ERROR == ret )
+    {
+        HERT_LOGDEBUG("ignore Interrupted event!");
+        return 2;
+    }
+    else if ( RETCODE_SUCCESS != ret)
+    {
+        HERT_LOGDEBUG("Failed to HERT_TCP_check_Connect app!");
+        return 0;
+    }
+    return 1;
+}
+
+static int upWebSiteReachable()
+{
+    char sz1stDnsServer[64];
+    char sz2ndDnsServer[64];
+    static int nHostPingCount = -1; /* first time, we need ping host */
+    static int nFirstPingNum  = 10; /* first time, we need ping host */
+    int  nRet = 0;
+
+#define CHECK_TCP_INTERNET_REACHABLE() \
+    nHostPingCount++; \
+    if ( (nFirstPingNum >= 0) || (nHostPingCount >= 9) ) \
+    { \
+        nHostPingCount = 0; \
+        nFirstPingNum = (nFirstPingNum < 0) ? nFirstPingNum : (nFirstPingNum-1); \
+        nRet = check_tcp_IsReachInternet(); \
+        if(nRet == 1) \
+        { \
+            HERT_LOGDEBUG("check_tcp_IsReachInternet is reachabled.\n"); \
+            return 0; \
+        } \
+        else if ( nRet == 2) \
+        { \
+            HERT_LOGDEBUG("check_tcp_IsReachInternet remain the statue.\n"); \
+            return -2; \
+        }\
+        HERT_LOGDEBUG("check_tcp_IsReachInternet not reachable.\n"); \
+        return -1; \
+    } \
+    else \
+    { \
+        HERT_LOGDEBUG("check_tcp_IsReachInternet remain the statue.\n"); \
+        return -2; \
+    }
+
+    if (!hertUtil_IsInFile("/var/needping","NEED_PING"))
+    {
+        nFirstPingNum  = 10;/* wan port not connected or internet interface is not up */
+        return -1;
+    }
+
+    if (hertUtil_getWanDnsServerIP(sz1stDnsServer, sizeof(sz1stDnsServer)-1, sz2ndDnsServer, sizeof(sz2ndDnsServer)-1)>= 0)
+    {
+        HERT_LOGDEBUG("sz1stDnsServer(%s), sz2ndDnsServer(%s)", sz1stDnsServer, sz2ndDnsServer);
+
+        if(sz1stDnsServer[0] != 0x0)
+        {
+           // if(ping_wan_host(sz1stDnsServer) == 1)
+           // {
+             //   HERT_LOGDEBUG("sz1stDnsServer(%s), ping ok!", sz1stDnsServer);
+                CHECK_TCP_INTERNET_REACHABLE();
+           // }
+        }
+        if( (sz2ndDnsServer[0] != 0x0) && (0 != strcasecmp(sz1stDnsServer, sz2ndDnsServer)))
+        {
+           // if(ping_wan_host(sz2ndDnsServer) == 1)
+           // {
+             //   HERT_LOGDEBUG("sz2ndDnsServer(%s), ping ok!", sz2ndDnsServer);
+                CHECK_TCP_INTERNET_REACHABLE();
+           // }
+        }
+    }
+    HERT_LOGDEBUG("Dns server is not reachable....\n");
+
+/*
+    if(ping_wan_host(BAIDU_DOMAIN_NAME) == 1)
+    {
+        return 0;
+    }
+  
+    if(ping_wan_host(NETEASY_DOMAIN_NAME) == 1)
+    {
+        return 0;
+    }
+  
+    if(ping_wan_host(SOHU_DOMAIN_NAME) == 1)
+    {
+        return 0;
+    }
+*/
+    return -1;
+}
+
+int  hertUtil_UpdateLanClients()
+{
+    FILE *fpr;
+    FILE *fpw;
+    FILEDHCPITEM lease;
+    struct in_addr addr;
+    char  szHostname[128];
+    char szLowMac[64];
+
+#define READ_FILE  "/var/readudcpdlease"
+#define WRITE_FILE "/var/writeudcpdlease"
+
+    char szCmd[256];
+
+    HERT_LOGDEBUG(">>>>>>>>>>>>>>>>>\n");
+    memset(szCmd, 0x0, sizeof(szCmd));
+    sprintf(szCmd, "rm -rf %s 2>/dev/null", WRITE_FILE);
+    system(szCmd);
+
+    memset(szCmd, 0x0, sizeof(szCmd));
+    sprintf(szCmd, "rm -rf %s 2>/dev/null", READ_FILE);
+    system(szCmd);
+
+    memset(szCmd, 0x0, sizeof(szCmd));
+    sprintf(szCmd, "cp /var/udhcpd.leases %s 2>/dev/null", READ_FILE);
+    system(szCmd);
+
+    /* open the lease clients file */
+    fpr = fopen(READ_FILE, "r");
+    if (NULL == fpr)
+    {
+        HERT_LOGERR("Failed to open pszSrcUdcpdleaseFile(%s)!", READ_FILE);
+        return -1;
+    }
+
+    fpw = fopen(WRITE_FILE, "wb");
+    if (NULL == fpw)
+    {
+        HERT_LOGERR("Failed to open pszSrcUdcpdleaseFile(%s)!", WRITE_FILE);
+        fclose(fpr);
+        return -1;
+    }
+	
+    while ( fread(&lease, 1, sizeof(lease), fpr) == sizeof(lease))
+    {
+        sprintf(szLowMac, "%02x:%02x:%02x:%02x:%02x:%02x", lease.mac[0], lease.mac[1], 
+            lease.mac[2], lease.mac[3],lease.mac[4], lease.mac[5]);
+
+        if (hertUtil_IsInSaveWirelessClientMac(szLowMac))
+        {
+            fwrite(&lease, 1, sizeof(lease), fpw);
+            continue; /* it is wireless client, save it */
+        }
+        /* before save the net cable connect clients need ping it */
+        addr.s_addr = lease.ip;
+        memset(szHostname, 0x0, sizeof(szHostname));
+        sprintf(szHostname, "%s", inet_ntoa(addr));
+        HERT_LOGDEBUG("szHostname(%s)\n", szHostname);
+        if (!heroute_ping_apiLan(szHostname, hertUtil_getLanIP(), 3, 3))
+        {
+            fwrite(&lease, 1, sizeof(lease), fpw);
+        }
+    }
+    fclose(fpr);
+    fclose(fpw);
+
+    memset(szCmd, 0x0, sizeof(szCmd));
+    sprintf(szCmd, "cp %s /var/udhcpd.leases 2>/dev/null", WRITE_FILE);
+    system(szCmd);
+
+    HERT_LOGDEBUG("<<<<<<<<<<<<<<<<<\n"); 
+
+    return 0;
+}
+
+
+void Update_Ping_Status_Thread(void * arg)
+{
+    int nReachable = 0;
+    int nPiceTime = 3; /* 3 seconds for loop */
+    int nWanTimes = hertUtil_getWanDectTime()/nPiceTime;
+    int nWanCount = 0;
+    int nLanTimes = hertUtil_getLanDectTime()/nPiceTime;
+    int nLanCount = 0;
+    char szNewWanIp[64];
+    char szOldWanIp[64];
+    int nPreRunCount = 0;
+    int nNoRunCount = 0;
+    int goaheadBlockTimes = 0;
+
+#define DO_WAN_PING() \
+    nReachable = upWebSiteReachable(); \
+    HERT_LOGDEBUG("nReachable(%d)\n", nReachable); \
+    if(nReachable == 0) \
+    { \
+        system("echo pass > /var/webspingsts"); \
+    } \
+    else if(nReachable == -1) \
+    { \
+        system("echo failed > /var/webspingsts"); \
+    }
+
+
+    memset(szNewWanIp, 0x0, sizeof(szNewWanIp));
+    memset(szOldWanIp, 0x0, sizeof(szOldWanIp));
+
+    printf("[%s,%d]: __ %d ___\n", __FUNCTION__, __LINE__, getpid() ); 
+
+    check_tcp_IsReachInternet_Init();
+
+    while(1)
+    {
+        if (hertUtil_IsInFile("/var/nopingthread","DEBUG"))
+        {
+            sleep(10000);
+        }
+
+        hertUtil_setMonitorLoglevel();
+
+        if (nPreRunCount == g_nRunCount)
+        {
+            nNoRunCount++;
+            if (nNoRunCount >= 10)
+            {
+                HERT_LOGERR("main thread maybe blocked: %d\n", nNoRunCount);
+                nNoRunCount = 0;
+                system("echo restart > /var/hertmtrst");
+            }
+        }
+        else
+        {
+            nNoRunCount = 0;
+            nPreRunCount = g_nRunCount;
+        }
+
+        if(hertUtil_getGoaheadIsBlock())
+        {
+            goaheadBlockTimes++;
+        }
+        else
+        {
+            goaheadBlockTimes = 0;
+        }
+        
+        if ( !hertUtil_IsInFile("/var/norungoahead","DEBUG"))
+        {
+            /* check goahead is high CPU share */
+            if ( goaheadBlockTimes >= 10)
+            {
+                system("echo RUN_BY_PLATFORM > /var/whorungoahead");
+                HERT_LOGERR("Be careful, goahead was high CPU share, restart it!");
+                goaheadBlockTimes = 0;
+                system("killall goahead");
+                system("goahead &");
+            }
+        }
+        
+
+        nWanCount++;
+        if ( (nWanCount >= nWanTimes) && (szOldWanIp[0] != 0x0))
+        {
+            DO_WAN_PING();
+            nWanCount = 0;
+        }
+
+        nLanCount++;
+        if (nLanCount >= nLanTimes)
+        {
+            nLanCount = 0;
+
+            hertUtil_UpdateLanClients();
+        }
+
+        memset(szNewWanIp, 0x0, sizeof(szNewWanIp));
+        if (hertUtil_IsInFile("/var/needping","NEED_PING"))
+        {
+            strcpy(szNewWanIp, hertUtil_getWanIP());
+        }
+        else
+        {
+            if (g_nUseSelect == 1)
+            {
+                usleep(3000 * 1000);
+                HERT_LOGINFO("___ usleep ___\n");
+            }
+            else
+            {
+                hert_SelectTimer(3);
+                HERT_LOGINFO("___ select ___\n");
+            }
+            HERT_LOGDEBUG(" T h e   t h r e a d   i s    s t i l l   a l i v e\n");
+            continue;
+        }
+
+        HERT_LOGDEBUG("szOldWanIp(%s), szNewWanIp(%s)\n", szOldWanIp, szNewWanIp);
+        if ( ((*szOldWanIp == 0x0) || (0 != strcmp(szNewWanIp, szOldWanIp))) && (*szNewWanIp != 0x0) )
+        {
+            HERT_LOGDEBUG("Wan ip is changed or not get, szOldWanIp(%s), szNewWanIp(%s)\n", szOldWanIp, szNewWanIp);
+            memset(szOldWanIp, 0x0, sizeof(szOldWanIp));
+            strcpy(szOldWanIp, szNewWanIp);
+            HERT_LOGDEBUG("szOldWanIp(%s)\n", szOldWanIp);
+            if (*szOldWanIp != 0x0)
+            {
+                /* local wan ip is changed */
+                check_tcp_IsReachInternet_Init();
+
+                DO_WAN_PING();
+            }
+        }
+        else if ( *szNewWanIp == 0x0 )
+        {
+            memset(szOldWanIp, 0x0, sizeof(szOldWanIp));
+            HERT_LOGDEBUG("szOldWanIp(%s)\n", szOldWanIp);
+        }
+
+        if (g_nUseSelect == 1)
+        {
+            usleep(3000 * 1000);
+            HERT_LOGINFO("___ usleep ___\n");
+        }
+        else
+        {
+            hert_SelectTimer(3);
+            HERT_LOGINFO("___ select ___\n");
+        }
+        HERT_LOGDEBUG(" T h e   t h r e a d   i s    s t i l l   a l i v e\n");
+    }
+ 
+    return;
+}
+
+int hertUtil_getTimeFunc()
+{
+    FILE *file;
+    static char szSlect[64];
+    char cmd[128];
+    const char *tempFileName = "/var/tempwantime.txt";
+
+    memset(szSlect, 0x0, sizeof(szSlect));
+    sprintf(cmd,"nvram_get HE_ROUTE_USE_SELECT > %s", tempFileName);
+    system(cmd);
+    if (!(file = fopen(tempFileName, "r"))) 
+    {
+        HERT_LOGINFO("unable to open config file: %s\n",tempFileName);
+        return 0;
+    }   
+    if (fgets(szSlect, 64, file) && (strlen(szSlect) >= 1) ) 
+    {
+        /* remove 0x0d,0x0a if there is */
+        REMOVE_CRLN(szSlect);
+    }    
+    fclose(file);
+    unlink(tempFileName);
+
+    return atoi(szSlect);
+}
+
+int  hert_SelectTimer(int nSecond)
+{
+    int rc = 0;
+    struct timeval tv;
+    tv.tv_sec = nSecond;
+    tv.tv_usec = 0;
+    rc = select(0, NULL, NULL, NULL, &tv);
+    if ( -1 == rc )
+    {
+        usleep(nSecond * 1000 * 1000);
+    }
+    return  0;
+}
+
+int main(int argc, char **argv)
+{
+    char szCmd[256];
+    pthread_t th_control;
+    int nQosRstGoahead = 0;
+
+    system("rm -rf /var/hertmtrst 2>/dev/null");
+
+    // change the wait time for 30 seconds
+    system("echo 30 > /proc/sys/net/ipv4/tcp_fin_timeout");
+	
+    while(1)
+    {
+        if ( hertUtil_IsInFile("/var/finishstart","finishedstart"))
+        {
+            break;
+        }
+        sleep(2);
+    }
+
+    pthread_create(&th_control,NULL,(void*)Update_Ping_Status_Thread, NULL);
+
+    g_nUseSelect = hertUtil_getTimeFunc();
+   
+    while(1)
+    {
+        system("echo set_log_level > /var/monitor.log");
+        hertUtil_setMonitorLoglevel();
+
+        system("echo watch_goadhead > /var/monitor.log");
+        
+       /* watch goahead */
+        
+        if ( !hertUtil_IsInFile("/var/norungoahead","DEBUG"))
+        {
+            /* check goahead is running or not */
+            if ( !hertUtil_getGoaheadIsRuning())
+            {
+                system("echo RUN_BY_PLATFORM > /var/whorungoahead");
+                HERT_LOGERR("Be careful, goahead was died, restart it!");
+                system("killall goahead");
+                system("goahead &");
+            }
+        }
+
+        system("echo watch_qos_goadhead > /var/monitor.log");
+        /* watch qos parameters was changed by dhcpd */
+        if ( hertUtil_IsInFile("/var/rstgoahead","restartgoahead"))
+        {
+            nQosRstGoahead++;
+            /* wait for 15 seconds for restart goahead */
+            if ( nQosRstGoahead >= 5 )
+            {
+                system("echo RUN_BY_PLATFORM > /var/whorungoahead");
+                HERT_LOGINFO("Killall goahead for Qos was update, restart it!");
+                system("killall goahead");
+                system("killall goahead");
+                system("goahead &");
+                unlink("/var/rstgoahead");
+                nQosRstGoahead = 0;
+            }
+        }
+#if 0
+        /* watch dnsd */
+        if (!hertUtil_getDnsdIsRuning())
+        {
+             memset(szCmd, 0x0, sizeof(szCmd));
+             sprintf(szCmd, "dnsd -i %s &", hertUtil_getLanIP());
+             system(szCmd);
+        }
+#endif
+        system("echo watch_dnsmasq > /var/monitor.log");
+        /* watch dnsmasq */
+        if(!hertUtil_getDnsmasqIsRuning())
+        {
+            memset(szCmd, 0x0, sizeof(szCmd));
+            sprintf(szCmd, "dnsmasq --listen-address=%s --address=/www.heluyou.com/%s &", hertUtil_getLanIP(),hertUtil_getLanIP());
+            printf("%s\n",szCmd);
+            system(szCmd);
+        }
+     system("echo watch_proftpd > /var/monitor.log");
+	 /* watch watch_proftpd */
+	 static int time=1;
+	 if((0==access("//media//sda1",F_OK))&&(!hertUtil_getProftpdIsRuning()))
+	 {   
+		 time=time>30?1:time;
+		 if(time%30==15){
+			 memset(szCmd, 0x0, sizeof(szCmd));
+			 remove("//etc//proftpd.conf");
+			 if(access("//etc//proftpd.conf",F_OK)){	
+				 sprintf(szCmd, "nvram_set FtpEnabled 1");
+				 HERT_LOGDEBUG("%s\n",szCmd);
+				 system(szCmd);
+				 sprintf(szCmd, "/sbin/storage.sh ftp &");
+				 HERT_LOGDEBUG("%s\n",szCmd);
+				 system(szCmd);
+			 }
+		 }	
+		 time++;
+	 }
+	 else{
+		 time=1;
+	 }
+   system("echo watch_pppd > /var/monitor.log");
+	char * tmp=hertUtil_getWanConnectionMode();
+	static int  delaytime=0;
+	if(strncmp(tmp,"PPPOE",sizeof("PPPOE")) == 0)
+	{
+		HERT_LOGDEBUG("wan stat is PPPOE delaytime=%d \n",delaytime);
+		if(!hertUtil_getPppdRuning())
+		{   delaytime=delaytime>30?0:delaytime;
+			if(delaytime++==30){
+				HERT_LOGDEBUG("internet.sh & \n");
+				system("internet.sh &");
+			}
+		}
+		else{
+			delaytime=0;
+		}
+
+	}
+        system("echo watch_herouteapp > /var/monitor.log");
+        /* watch herouteapp */
+        if(!hertUtil_getHerouteAppIsRuning())
+        {
+            memset(szCmd, 0x0, sizeof(szCmd));
+            sprintf(szCmd, "herouteapp &");
+            printf("%s\n",szCmd);
+            system(szCmd);
+        }
+        system("echo clear_trash > /var/monitor.log");
+        system("rm -rf /var/tempgoaheadruning.txt");
+        system("rm -rf /var/tempdnsmasqruning.txt");
+        system("rm -rf /var/tempherouteappruning.txt");
+        system("echo sleep_3_s > /var/monitor.log");
+        if (g_nUseSelect == 1)
+        {
+            usleep(3000 * 1000);
+            HERT_LOGINFO("___ usleep ___\n");
+        }
+        else
+        {
+            hert_SelectTimer(3);
+            HERT_LOGINFO("___ select ___\n");
+        }
+        system("echo loop_again > /var/monitor.log");
+        g_nRunCount = (g_nRunCount > 10000) ? 0 : (g_nRunCount + 1);
+        HERT_LOGDEBUG(" T h e   t h r e a d   i s    s t i l l   a l i v e\n");
+    }
+
+    return 0;
+}

@@ -1,0 +1,43 @@
+Ralink AP SDK - History
+
+Version 4.2.0.0
+===============
+
+PLATFORM:
+
+- Support MT7621/MT7620 (linux-2.6.36.x)
+- Support RT6855/RT6856 (linux-2.6.36MT.x)
+- Support RT3052/RT3883/RT3352/RT5350 (linux-2.6.21.x)
+
+
+IMPROVEMENT:
+
+- [SYS] Optimized for WiFi & Samba performance
+- [SPI] Support Winbond W25Q256FV 32MB flash
+- [QoS] Software QoS feature enhancement (SFQ)
+- [Switch] enlarge 7620/6856 switch packet counter from 16bits to 32bits
+
+
+NEW FUNCTIONS:
+
+- [ETH] Support Gigabit Ethernet compliance test tools (gtd.sh & gtp.sh)
+- [Switch] switch command ingress/egress rate control support Kbps scale
+- [WIFI] Support MT7612E (PCIe 2x2AC) + MT7602E (PCIe 2x2n)
+- [WIFI] Support NFC (MT7621+MT6605)
+- [I2S] Support WM8960 function
+- [I2S] Add ALSA support 
+- [WEB] Support lighttpd web server
+- [WEB] Support 11AC WiFi interface GUI
+- [QDMA] Integrate Software QoS feature with QDMA
+- [DMZ] Support SuperDMZ on MT7620/MT7621
+- [IGMP] Support MT7621 GSW IGMP snooping
+
+
+BUG FIXED:
+
+- Fix SATA bug when plug-in HDD then power on
+- Fix igmproxy bugs: flooding due to messed mt7620 switch tables
+- Support HNAT with special tag enabled
+- [HWNAT] Add hw_nat error handling if free memory is not enough.
+
+

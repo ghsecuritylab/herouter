@@ -1,0 +1,304 @@
+libcurl_la-http_proxy.lo libcurl_la-http_proxy.o: http_proxy.c \
+  curl_setup.h curl_config.h ../include/curl/curlbuild.h \
+  /opt/buildroot-gcc342/include/sys/types.h \
+  /opt/buildroot-gcc342/include/features.h \
+  /opt/buildroot-gcc342/include/bits/uClibc_config.h \
+  /opt/buildroot-gcc342/include/sys/cdefs.h \
+  /opt/buildroot-gcc342/include/bits/types.h \
+  /opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/stddef.h \
+  /opt/buildroot-gcc342/include/bits/kernel_types.h \
+  /opt/buildroot-gcc342/include/time.h \
+  /opt/buildroot-gcc342/include/stdint.h \
+  /opt/buildroot-gcc342/include/bits/wchar.h \
+  /opt/buildroot-gcc342/include/bits/wordsize.h \
+  /opt/buildroot-gcc342/include/inttypes.h \
+  /opt/buildroot-gcc342/include/sys/socket.h \
+  /opt/buildroot-gcc342/include/sys/uio.h \
+  /opt/buildroot-gcc342/include/bits/uio.h \
+  /opt/buildroot-gcc342/include/bits/socket.h \
+  /opt/buildroot-gcc342/include/limits.h \
+  /opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/limits.h \
+  /opt/buildroot-gcc342/include/bits/posix1_lim.h \
+  /opt/buildroot-gcc342/include/bits/local_lim.h \
+  /opt/buildroot-gcc342/include/linux/limits.h \
+  /opt/buildroot-gcc342/include/bits/sockaddr.h \
+  /opt/buildroot-gcc342/include/asm/socket.h \
+  /opt/buildroot-gcc342/include/asm/sockios.h \
+  /opt/buildroot-gcc342/include/asm/ioctl.h ../include/curl/curlrules.h \
+  /opt/buildroot-gcc342/include/stdio.h \
+  /opt/buildroot-gcc342/include/bits/uClibc_stdio.h \
+  /opt/buildroot-gcc342/include/wchar.h \
+  /opt/buildroot-gcc342/include/bits/pthreadtypes.h \
+  /opt/buildroot-gcc342/include/bits/sched.h \
+  /opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/stdarg.h \
+  /opt/buildroot-gcc342/include/bits/stdio_lim.h \
+  /opt/buildroot-gcc342/include/assert.h curl_setup_once.h \
+  /opt/buildroot-gcc342/include/stdlib.h \
+  /opt/buildroot-gcc342/include/string.h \
+  /opt/buildroot-gcc342/include/ctype.h \
+  /opt/buildroot-gcc342/include/bits/uClibc_touplow.h \
+  /opt/buildroot-gcc342/include/errno.h \
+  /opt/buildroot-gcc342/include/bits/errno.h \
+  /opt/buildroot-gcc342/include/bits/errno_values.h \
+  /opt/buildroot-gcc342/include/sys/stat.h \
+  /opt/buildroot-gcc342/include/bits/stat.h \
+  /opt/buildroot-gcc342/include/sys/time.h \
+  /opt/buildroot-gcc342/include/bits/time.h \
+  /opt/buildroot-gcc342/include/sys/select.h \
+  /opt/buildroot-gcc342/include/bits/select.h \
+  /opt/buildroot-gcc342/include/bits/sigset.h \
+  /opt/buildroot-gcc342/include/bits/uClibc_clk_tck.h \
+  /opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/stdbool.h \
+  /opt/buildroot-gcc342/include/unistd.h \
+  /opt/buildroot-gcc342/include/bits/posix_opt.h \
+  /opt/buildroot-gcc342/include/bits/confname.h urldata.h cookie.h \
+  ../include/curl/curl.h ../include/curl/curlver.h \
+  ../include/curl/curlbuild.h ../include/curl/curlrules.h \
+  ../include/curl/easy.h ../include/curl/multi.h ../include/curl/curl.h \
+  formdata.h /opt/buildroot-gcc342/include/netinet/in.h \
+  /opt/buildroot-gcc342/include/bits/in.h \
+  /opt/buildroot-gcc342/include/endian.h \
+  /opt/buildroot-gcc342/include/bits/endian.h \
+  /opt/buildroot-gcc342/include/bits/byteswap.h timeval.h http_chunks.h \
+  hostip.h hash.h llist.h curl_addrinfo.h \
+  /opt/buildroot-gcc342/include/netdb.h \
+  /opt/buildroot-gcc342/include/bits/netdb.h \
+  /opt/buildroot-gcc342/include/arpa/inet.h asyn.h \
+  /opt/buildroot-gcc342/include/setjmp.h \
+  /opt/buildroot-gcc342/include/bits/setjmp.h splay.h imap.h pingpong.h \
+  pop3.h smtp.h ftp.h file.h ssh.h http.h rtsp.h wildcard.h multihandle.h \
+  http_proxy.h sendf.h url.h select.h \
+  /opt/buildroot-gcc342/include/sys/poll.h \
+  /opt/buildroot-gcc342/include/bits/poll.h rawstr.h progress.h \
+  non-ascii.h connect.h nonblock.h sockaddr.h ../include/curl/mprintf.h \
+  curlx.h strequal.h strtoofft.h warnless.h curl_memory.h memdebug.h
+
+curl_setup.h:
+
+curl_config.h:
+
+../include/curl/curlbuild.h:
+
+/opt/buildroot-gcc342/include/sys/types.h:
+
+/opt/buildroot-gcc342/include/features.h:
+
+/opt/buildroot-gcc342/include/bits/uClibc_config.h:
+
+/opt/buildroot-gcc342/include/sys/cdefs.h:
+
+/opt/buildroot-gcc342/include/bits/types.h:
+
+/opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/stddef.h:
+
+/opt/buildroot-gcc342/include/bits/kernel_types.h:
+
+/opt/buildroot-gcc342/include/time.h:
+
+/opt/buildroot-gcc342/include/stdint.h:
+
+/opt/buildroot-gcc342/include/bits/wchar.h:
+
+/opt/buildroot-gcc342/include/bits/wordsize.h:
+
+/opt/buildroot-gcc342/include/inttypes.h:
+
+/opt/buildroot-gcc342/include/sys/socket.h:
+
+/opt/buildroot-gcc342/include/sys/uio.h:
+
+/opt/buildroot-gcc342/include/bits/uio.h:
+
+/opt/buildroot-gcc342/include/bits/socket.h:
+
+/opt/buildroot-gcc342/include/limits.h:
+
+/opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/limits.h:
+
+/opt/buildroot-gcc342/include/bits/posix1_lim.h:
+
+/opt/buildroot-gcc342/include/bits/local_lim.h:
+
+/opt/buildroot-gcc342/include/linux/limits.h:
+
+/opt/buildroot-gcc342/include/bits/sockaddr.h:
+
+/opt/buildroot-gcc342/include/asm/socket.h:
+
+/opt/buildroot-gcc342/include/asm/sockios.h:
+
+/opt/buildroot-gcc342/include/asm/ioctl.h:
+
+../include/curl/curlrules.h:
+
+/opt/buildroot-gcc342/include/stdio.h:
+
+/opt/buildroot-gcc342/include/bits/uClibc_stdio.h:
+
+/opt/buildroot-gcc342/include/wchar.h:
+
+/opt/buildroot-gcc342/include/bits/pthreadtypes.h:
+
+/opt/buildroot-gcc342/include/bits/sched.h:
+
+/opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/stdarg.h:
+
+/opt/buildroot-gcc342/include/bits/stdio_lim.h:
+
+/opt/buildroot-gcc342/include/assert.h:
+
+curl_setup_once.h:
+
+/opt/buildroot-gcc342/include/stdlib.h:
+
+/opt/buildroot-gcc342/include/string.h:
+
+/opt/buildroot-gcc342/include/ctype.h:
+
+/opt/buildroot-gcc342/include/bits/uClibc_touplow.h:
+
+/opt/buildroot-gcc342/include/errno.h:
+
+/opt/buildroot-gcc342/include/bits/errno.h:
+
+/opt/buildroot-gcc342/include/bits/errno_values.h:
+
+/opt/buildroot-gcc342/include/sys/stat.h:
+
+/opt/buildroot-gcc342/include/bits/stat.h:
+
+/opt/buildroot-gcc342/include/sys/time.h:
+
+/opt/buildroot-gcc342/include/bits/time.h:
+
+/opt/buildroot-gcc342/include/sys/select.h:
+
+/opt/buildroot-gcc342/include/bits/select.h:
+
+/opt/buildroot-gcc342/include/bits/sigset.h:
+
+/opt/buildroot-gcc342/include/bits/uClibc_clk_tck.h:
+
+/opt/buildroot-gcc342/bin/../lib/gcc/mipsel-linux-uclibc/3.4.2/include/stdbool.h:
+
+/opt/buildroot-gcc342/include/unistd.h:
+
+/opt/buildroot-gcc342/include/bits/posix_opt.h:
+
+/opt/buildroot-gcc342/include/bits/confname.h:
+
+urldata.h:
+
+cookie.h:
+
+../include/curl/curl.h:
+
+../include/curl/curlver.h:
+
+../include/curl/curlbuild.h:
+
+../include/curl/curlrules.h:
+
+../include/curl/easy.h:
+
+../include/curl/multi.h:
+
+../include/curl/curl.h:
+
+formdata.h:
+
+/opt/buildroot-gcc342/include/netinet/in.h:
+
+/opt/buildroot-gcc342/include/bits/in.h:
+
+/opt/buildroot-gcc342/include/endian.h:
+
+/opt/buildroot-gcc342/include/bits/endian.h:
+
+/opt/buildroot-gcc342/include/bits/byteswap.h:
+
+timeval.h:
+
+http_chunks.h:
+
+hostip.h:
+
+hash.h:
+
+llist.h:
+
+curl_addrinfo.h:
+
+/opt/buildroot-gcc342/include/netdb.h:
+
+/opt/buildroot-gcc342/include/bits/netdb.h:
+
+/opt/buildroot-gcc342/include/arpa/inet.h:
+
+asyn.h:
+
+/opt/buildroot-gcc342/include/setjmp.h:
+
+/opt/buildroot-gcc342/include/bits/setjmp.h:
+
+splay.h:
+
+imap.h:
+
+pingpong.h:
+
+pop3.h:
+
+smtp.h:
+
+ftp.h:
+
+file.h:
+
+ssh.h:
+
+http.h:
+
+rtsp.h:
+
+wildcard.h:
+
+multihandle.h:
+
+http_proxy.h:
+
+sendf.h:
+
+url.h:
+
+select.h:
+
+/opt/buildroot-gcc342/include/sys/poll.h:
+
+/opt/buildroot-gcc342/include/bits/poll.h:
+
+rawstr.h:
+
+progress.h:
+
+non-ascii.h:
+
+connect.h:
+
+nonblock.h:
+
+sockaddr.h:
+
+../include/curl/mprintf.h:
+
+curlx.h:
+
+strequal.h:
+
+strtoofft.h:
+
+warnless.h:
+
+curl_memory.h:
+
+memdebug.h:

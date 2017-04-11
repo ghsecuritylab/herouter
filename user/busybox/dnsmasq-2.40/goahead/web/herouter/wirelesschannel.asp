@@ -1,0 +1,224 @@
+<!doctype html> 
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>互联网设置</title>
+<link href="css/mainstyle.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="js/herouter.js"></script>
+<style type="text/css">
+<!--
+body{ color:#676767;}
+*{-moz-transition: all 0.3s ease-in;-webkit-transition: all 0.3s ease-in;-o-transition: all 0.3s ease-in;transition: all 0.3s ease-in;}
+*:hover{-moz-transition: all 0.3s ease-in;-webkit-transition: all 0.3s ease-in;-o-transition: all 0.3s ease-in;transition: all 0.3s ease-in;}
+.int { height:410px; width:670px; overflow:hidden; background:#fff url(images/popbg.gif) repeat-x 0 -2px; padding:5px 15px;}
+.int h1{ font-size:18px; line-height:50px; }
+.int h1 span{ font-size:12px; color:#919191; padding-left:15px; font-weight:normal;}
+.mainsetting{ padding:30px; }
+.mainsetting h2{ font-size:14px; line-height:38px;}
+.c1{ height:48px;}
+.c1 b{ display:block; height:48px; cursor:pointer; width:190px; font-weight:normal; float:left; background:#77d1df; font-size:18px; color:#fff; text-align:center; line-height:48px;}
+.c1 a{ background:url(images/help.png) no-repeat center center; display:block; float:left; height:48px; width:30px;}
+.c1 b:hover{ background:#56bbcb;}
+.c1 span{  font-size:12px; color:#919191; padding:0 0 0 15px; float:left; font-weight:normal; line-height:48px;}
+.c1 .err{ background:#e71b1b;}
+.c1 .err:hover{ background:#da1515;}
+.mainsetting h3{ font-size:24px; font-weight:normal; line-height:50px; color:#29b8e4;}
+.c2{ border-top:1px #e6e6e6 solid; margin-top:80px; line-height:30px;}
+
+.cfg{ padding:15px 0; height:330px;}
+.cfgleft{ float:left; width:185px; height:330px; background:url(images/cfgleftbg.png) repeat-y;}
+.cfgleft ul{}
+.cfgleft li{ cursor:pointer; height:40px; line-height:40px; font-size:14px; color:#666; border-left:4px #dfdfdf solid ; padding-left:12px;}
+.cfgleft li a,.cfgleft li a:visited{color:#666; display:block; height:40px;width:170px; }
+.cfgleft li a:hover,.cfgleft li a:active{ text-decoration:none;}
+.cfgleft li:hover{ border-left:4px #1e9ec5 solid;  font-weight:bold;}
+.cfgleft li.on{ border-left:4px #1e9ec5 solid; color:#1e9ec5; font-weight:bold; font-size:14px; background:#fff url(images/arrow1.png) no-repeat 170px center;}
+.cfgleft li.on a{color:#1e9ec5;}
+.cfgright{ float:right; width:470px; height:330px;}
+.cfgright td{ height:36px; font-size:14px;}
+.cfgright td span{ padding-left:50px; font-size:14px;}
+.cfgright .spheight{ height:60px; }
+.cfgright td label{ font-size:14px; line-height:60px;}
+.radiobox{ margin-top:-2px;}
+.inp1 {height:26px; border:1px #d2d2d2 solid; width:160px;font-family:"微软雅黑"; color:#666; padding:0 10px;}
+.subpart{ height:48px; padding-left:120px; padding-top:25px;}
+.subpart ul{}
+.subpart li{ float:left; padding-right:10px;}
+.subpart b{ display:block; height:48px; cursor:pointer; width:170px; font-weight:normal; float:left; background:#77d1df; font-size:18px; color:#fff; text-align:center; line-height:48px;}
+.subpart b:hover{ background:#56bbcb;}
+.subpart .cancel{ width:110px; background:#99e4f0; }
+
+
+
+.selectinp{height:28px; border:1px #d2d2d2 solid; width:230px; line-height:26px; font-family:"微软雅黑";color:#666;padding:0 10px; background:#fff url(images/dropd.png) no-repeat right center;}
+.fix{ position:absolute;}
+.bm {margin-top:30px;position:absolute;}
+.ganyin{ position:absolute; height:30px;cursor:pointer; border:1px #333 solid; z-index:100001; background:#0099CC;filter:alpha(opacity=0);-moz-opacity:0;-khtml-opacity: 0;opacity: 0;}
+.bm ul{ padding:1px 0 0 0; border-bottom:1px #eee solid; border-left:1px #eee solid; border-right:1px #eee solid; }
+.bm li{ color:#0781d9; line-height:15px; padding-left:10px; height:15px; background:#fff; font-size:12px; text-align:left; padding-right:12px; display:block;}
+.bm .nowon{ color:#adadae;}
+.bm li:hover{ background-color:#b2e9fd;cursor:pointer;}
+-->
+</style>
+<script type="text/javascript">
+	var PhyMode  = '<% getCfgZero(1, "WirelessMode"); %>';
+	var ChannelSeleted ='<% getChannelSelected(); %>';
+
+function StylDispOn()
+{
+	if (window.ActiveXObject)
+	{ // IE
+		return "block";
+	}
+	else if (window.XMLHttpRequest)
+	{ // Mozilla, Safari,...
+		return "table-row";
+	}
+}
+	
+function onLoad()
+{
+
+	PhyMode = 1*PhyMode;
+	
+	document.getElementById("div_11a_channel").style.visibility = "hidden";
+	document.getElementById("div_11a_channel").style.display = "none";
+	document.getElementById("div_11b_channel").style.visibility = "hidden";
+	document.getElementById("div_11b_channel").style.display = "none";
+	document.getElementById("div_11g_channel").style.visibility = "hidden";
+	document.getElementById("div_11g_channel").style.display = "none";
+	
+	if ((PhyMode == 0) || (PhyMode == 4) || (PhyMode == 9) || (PhyMode == 6))
+	{
+		document.getElementById("div_11g_channel").style.visibility = "visible";
+		document.getElementById("div_11g_channel").style.display = StylDispOn();
+		document.getElementById("Channel").name = "sz11gChannel";
+	}
+	else if (PhyMode == 1)
+	{
+		document.getElementById("div_11b_channel").style.visibility = "visible";
+		document.getElementById("div_11b_channel").style.display = StylDispOn();
+		document.getElementById("Channel").name = "sz11bChannel";
+	}
+	else if ((PhyMode == 2) || (PhyMode == 8) || (PhyMode == 11) || (PhyMode >= 14))
+	{
+		document.getElementById("div_11a_channel").style.visibility = "visible";
+		document.getElementById("div_11a_channel").style.display = StylDispOn();
+		document.getElementById("Channel").name = "sz11aChannel";
+	}
+	document.getElementById("select1").value = ChannelSeleted;
+}
+function wifichannelsubmit()
+{
+	if( document.getElementById("Channel").value == "")
+	{
+		alert("请选择信道");
+		return;
+	}
+	else
+	{
+		document.wireless_channel.submit();	
+		//alert("设置成功");
+		Alert("正在保存设置，请稍候", 10);	
+		setTimeout("Alert('设置成功，无线网络将断开，请在30秒后重新进入本页面',25)", 10100);	
+	}
+}
+</script>
+</head>
+
+<body onLoad="onLoad()">
+<div class="int">
+	<h1>高级设置</h1>
+    <div class="cfg">
+        <div class="cfgleft">
+            <ul>
+                <li><a href="entconfig.asp">局域网设置</a></li>
+                <li><a href="DHCPbanding.asp">DHCP设置</a></li>
+				<li><a href="MACClone.asp">MAC地址克隆</a></li>
+				<li class="on"><a href="wirelesschannel.asp">无线信道设置</a></li>
+				<li><a href="wirelessMAC.asp">无线MAC地址访问控制</a></li>
+				<li><a href="systemtime.asp">系统时间管理</a></li>
+				<li><a href="sysupdate.asp">系统升级</a></li>
+				<li><a href="restoredefault.asp">恢复出厂设置</a></li>
+            </ul>
+        </div>
+        <form method="post" name="wireless_channel" action="/goform/wireless_channel">
+        <div class="cfgright">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="25%">&nbsp;</td>
+                <td width="75%">&nbsp;</td>
+              </tr>
+
+              <tr>
+                <td><span>无线信道</span></td>
+                <td><div class="fix" style=" z-index:999;">
+											<div class="ganyin" onClick="hide('test1')" style=" width:250px;"></div>
+										 	<div id="test1" style="display: none; " class="bm">
+												<ul style=" width:250px;">
+													<li  onClick="pick('0','select1','test1','AutoSelect')">AutoSelect</li>
+													<div id="div_11a_channel">
+														<% get11aChannels(); %>
+													</div>
+													<div id="div_11b_channel" >
+														<% get11bChannels(); %>
+													</div>
+													<div id="div_11g_channel" >
+														<% get11gChannels(); %>
+													</div>
+												</ul>
+											</div>
+									</div>
+							
+									<input type="hidden" id="Channel"  name=""/>
+									<input class="selectinp" type="text" id="select1" name="select1"/>
+								</td>
+					
+        			</tr>					  
+<!--						              
+              <tr>
+                <td><span>信号强度</span></td>
+                <td><div class="fix" style=" z-index:998;">
+						<div class="ganyin" onClick="hide('test2')" style=" width:250px;"></div>
+							<div id="test2" style="display: none; " class="bm">
+							<ul style=" width:250px;">
+								<li id="a11" onClick="pick('测试1','select2','test2')" >测试1</li>
+								<li id="a12" onClick="pick('测试2','select2','test2')" >测试2</li>
+								<li id="a13" onClick="pick('测试3','select2','test2')" >测试3</li>
+								<li id="a14" onClick="pick('测试4','select2','test2')" >测试4</li>
+								<li id="a15" onClick="pick('测试5','select2','test2')" >测试5</li>
+							</ul>
+						</div>
+					</div>
+					<input class="selectinp" type="text" id="select2" name="textfield2" /></td>
+              </tr>
+-->              
+            </table>
+            <div class="subpart">
+                <ul>
+                    <li><b onclick="wifichannelsubmit();">保存</b></li>
+                    <li><b class="cancel" onClick="javascript:parent.TINY.box.hide();">取消</b></li>
+                </ul>
+            </div>
+			
+
+        </div>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+function $$$$$(_sId){
+ return document.getElementById(_sId);
+ }
+function hide(_sId){
+	$$$$$(_sId).style.display = $$$$$(_sId).style.display == "none" ? "" : "none";
+ }
+function pick(v,targetid,abc,val) {
+	document.getElementById(targetid).value=val;
+	document.getElementById("Channel").value=v;
+	
+	hide(abc);
+}
+
+</script>
+</body>
+</html>
